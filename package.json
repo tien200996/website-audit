@@ -8,7 +8,7 @@
     "url": "git+https://github.com/tien200996/website-audit.git"
   },
   "bin": {
-    "website-audit": "server.js"
+    "website-audit": "bin/server.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.1",

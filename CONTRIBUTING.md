@@ -4,12 +4,12 @@
 
 1. Clone this repo and run `npm i`.
 2. In `example`, run `npm i`.
-3. In `example`, run `claude mcp add website_audit -- node ../server.js`, then open Claude Code there.
+3. In `example`, run `claude mcp add website_audit -- node ../bin/server.js`, then open Claude Code there.
 
 ## Folder structure
 
 ```
-server.js    the MCP server, loads tools and prompts
+bin/         the MCP server, loads tools and prompts
 tools/       one file = one tool
 prompts/     one file = one slash command
 example/     the starter library users copy

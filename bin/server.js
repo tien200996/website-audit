@@ -7,11 +7,11 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import Mustache from "mustache"
 import { parse as parseYaml } from "yaml"
 import * as zod from "zod"
-import packageInfo from "./package.json" with { type: "json" }
+import packageInfo from "../package.json" with { type: "json" }
 
-const SERVER_FOLDER = dirname(fileURLToPath(import.meta.url))
-const TOOLS_FOLDER = join(SERVER_FOLDER, "tools")
-const PROMPTS_FOLDER = join(SERVER_FOLDER, "prompts")
+const PACKAGE_FOLDER = dirname(dirname(fileURLToPath(import.meta.url)))
+const TOOLS_FOLDER = join(PACKAGE_FOLDER, "tools")
+const PROMPTS_FOLDER = join(PACKAGE_FOLDER, "prompts")
 const LIBRARY_FOLDER = process.cwd()
 const serverConfig = { libraryFolder: LIBRARY_FOLDER, auditsFolder: join(LIBRARY_FOLDER, "audits") }
 const mcpServer = new McpServer({ name: packageInfo.name, version: packageInfo.version })
