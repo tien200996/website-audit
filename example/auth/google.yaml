@@ -1,0 +1,10 @@
+title: Google
+description: Google access for the GTM and GA4 APIs, approved once in the browser then saved on this machine
+inputs:
+  client_file: { description: "OAuth client JSON of a Google Cloud desktop app, e.g. ~/google-client.json", required: true }
+outputs:
+  token:
+    description: OAuth access token
+run: node google.js --client-file {client_file}
+env:
+  WORKDIR: "{system.workdir}"

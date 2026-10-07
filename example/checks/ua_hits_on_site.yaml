@@ -1,0 +1,20 @@
+title: UA hits still sent
+description: "Starting July 1, 2023: Standard Universal Analytics properties stopped processing hits"
+reference: https://support.google.com/analytics/answer/11583528
+priority: high
+action: delete
+recommendation: Remove all UA tags from GTM and hardcoded UA- snippets
+sources: [crawl]
+js: |
+  const { pages: pageRecords, requests: requestRecords } = crawl
+  return pageRecords.map(pageRecord => {
+    const uaHits = requestRecords.filter(requestRecord =>
+      requestRecord.page === pageRecord.id && /[?&]tid=UA-/.test(requestRecord.url + "&" + requestRecord.body))
+    return {
+      target: pageRecord.path,
+      found: uaHits.length ? "yes" : pageRecord.error ? "unsure" : "no",
+      actual: [`${uaHits.length} UA hits`, pageRecord.error].filter(Boolean).join(", "),
+      expected: "0 UA hits",
+      evidence: uaHits.length ? uaHits.map(hitRecord => hitRecord.id) : [pageRecord.id]
+    }
+  })

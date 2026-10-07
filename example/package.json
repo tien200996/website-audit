@@ -1,0 +1,10 @@
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "postinstall": "playwright install --only-shell chromium"
+  },
+  "dependencies": {
+    "playwright": "^1.63.0"
+  }
+}

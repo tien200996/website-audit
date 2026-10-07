@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Website audit {{audit.id}}</title>
+<style>
+body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 72rem }
+table { border-collapse: collapse; width: 100% }
+th, td { border: 1px solid #ccc; padding: .4rem; text-align: left; vertical-align: top }
+small { color: #666 }
+pre { white-space: pre-wrap; word-break: break-all }
+</style>
+</head>
+<body>
+<h1>Website audit</h1>
+<p>{{audit.id}} · {{audit.date}}</p>
+
+<h2>Summary</h2>
+<table>
+<tr><th>action</th><th>findings</th></tr>
+{{#summary}}
+<tr><td>{{action}}</td><td>{{count}}</td></tr>
+{{/summary}}
+</table>
+
+{{#checks}}
+<section>
+<h2>{{title}} <small>{{priority}}</small></h2>
+<p>{{description}}</p>
+<p>Reference: {{#referenceUrl}}<a href="{{referenceUrl}}">{{referenceUrl}}</a>{{/referenceUrl}}{{^referenceUrl}}{{reference}}{{/referenceUrl}}</p>
+<p>Recommendation: {{recommendation}}</p>
+{{#isChecked}}
+<p>{{passedCount}} passed</p>
+{{/isChecked}}
+{{^isChecked}}
+<p>Not checked</p>
+{{/isChecked}}
+{{#hasOpenFindings}}
+<table>
+<tr><th>target</th><th>found</th><th>actual</th><th>expected</th><th>action</th><th>note</th><th>evidence</th></tr>
+{{#openFindings}}
+<tr>
+<td>{{target}}</td><td>{{found}}</td><td>{{actual}}</td><td>{{expected}}</td><td>{{decision.action}}</td><td>{{decision.note}}</td>
+<td>{{#records}}<details><summary>{{id}}</summary><pre>{{text}}</pre></details>{{/records}}</td>
+</tr>
+{{/openFindings}}
+</table>
+{{/hasOpenFindings}}
+</section>
+{{/checks}}
+</body>
+</html>

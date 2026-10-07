@@ -1,0 +1,26 @@
+title: GA4 events not using recommended names
+description: "Adding these events to your website or mobile app helps you measure additional features and behavior as well as generate more useful reports, and build suggested audiences."
+reference: https://support.google.com/analytics/answer/9267735
+priority: medium
+action: fix
+recommendation: Rename custom GA4 events to the recommended event with the same meaning, e.g. form_submit → generate_lead
+sources: [gtm]
+js: |
+  const { tags: tagRecords } = gtm
+  return tagRecords
+    .filter(tagRecord => tagRecord.type === "gaawe")
+    .map(tagRecord => ({ id: tagRecord.id, name: tagRecord.name, event: tagRecord.event }))
+prompt: |
+  Google recommends these GA4 event names: generate_lead, qualify_lead, disqualify_lead, working_lead,
+  close_convert_lead, close_unconvert_lead, login, sign_up, search, share, select_content, ad_impression,
+  purchase, refund, add_to_cart, remove_from_cart, add_to_wishlist, add_payment_info, add_shipping_info,
+  begin_checkout, view_cart, view_item, view_item_list, select_item, view_promotion, select_promotion,
+  join_group, tutorial_begin, tutorial_complete, earn_virtual_currency, spend_virtual_currency,
+  level_start, level_end, level_up, post_score, unlock_achievement.
+  Give back one item per GA4 event tag in the data:
+  - target: the tag name
+  - found: yes if the event means the same as a recommended event but uses another name,
+    no if it already uses a recommended name or has no match, unsure if you cannot tell
+  - actual: the event name
+  - expected: the recommended name, or the same name when found is no
+  - evidence: [the tag id]

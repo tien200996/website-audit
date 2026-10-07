@@ -1,0 +1,27 @@
+title: Client audit
+description: Audit one client website against the rule library
+arguments:
+  client: { description: "Client name or website", required: true }
+prompt: |
+  Audit the website of {{client}} against the rule library. Keep every message short and concrete.
+
+  ## 1. Audit
+  Pick a new audit id from the client name and the current date and time, e.g. client_com-2026-10-07-1430.
+  Use an earlier id only when the human wants to continue that audit.
+  Call audit with the id and all inputs, skips and results so far. Always send everything, nothing is remembered.
+  After the first call, show the checks as a short list: title and priority.
+  For each item where found is yes:
+  - target is an input name: ask the human for it, use expected as the hint
+  - target is login: show actual, it holds the login link, wait until the human approved
+  - target is run: show actual as the reason, ask the human to fix it or skip
+  - target is prompt: do what actual says with its data yourself, put your findings in results under the id before "#"
+  If the human cannot answer, offer to skip the id before "#" and list what gets skipped with it, from evidence.
+  Call audit again until no item has found yes.
+
+  ## 2. Report
+  Call report with the id. For each item:
+  - explain target, actual and expected in one line
+  - suggest the action of its check, from checks
+  - found unsure: say why and suggest investigate
+  Ask the human to confirm or change. One decision per check is fine, a finding id overrides it.
+  Call report with all decisions so far until report is not empty, then give the human the html path.

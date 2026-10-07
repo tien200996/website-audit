@@ -1,0 +1,19 @@
+title: UA tags still in GTM
+description: "Starting July 1, 2023: Standard Universal Analytics properties stopped processing hits"
+reference: https://support.google.com/analytics/answer/11583528
+priority: high
+action: delete
+recommendation: Delete UA tags and custom HTML tags with UA- ids from the container, then publish
+sources: [gtm]
+js: |
+  const { tags: tagRecords } = gtm
+  return tagRecords.map(tagRecord => {
+    const isUaTag = tagRecord.type === "ua" || /\bUA-\d+-\d+/.test(tagRecord.text)
+    return {
+      target: tagRecord.name,
+      found: isUaTag ? "yes" : "no",
+      actual: [`${tagRecord.type} tag`, tagRecord.paused ? "paused" : ""].filter(Boolean).join(", "),
+      expected: "No UA tag",
+      evidence: [tagRecord.id]
+    }
+  })

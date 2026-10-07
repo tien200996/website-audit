@@ -1,0 +1,19 @@
+title: GTM container
+description: Reads the tags of the live version of a GTM container
+auth: google
+inputs:
+  container: { description: "GTM container id, e.g. GTM-ABC123", required: true }
+outputs:
+  tags:
+    description: Every tag in the live version
+    fields:
+      id:     { description: "Record id, e.g. tag#12" }
+      name:   { description: "Tag name, e.g. UA - Pageview" }
+      type:   { description: "GTM tag type, e.g. ua, gaawe, html" }
+      paused: { description: "true if paused" }
+      event:  { description: "GA4 event name of a GA4 event tag, e.g. generate_lead; empty for other tags" }
+      text:   { description: "Every parameter value joined, e.g. the HTML of a custom tag" }
+run: node gtm.js --container {container}
+env:
+  WORKDIR: "{system.workdir}"
+  GOOGLE_TOKEN: "{auth.token}"
