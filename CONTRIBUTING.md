@@ -4,7 +4,7 @@
 
 1. Clone this repo and run `npm i`.
 2. In `example`, run `npm i`.
-3. In `example`, run `claude mcp add website_audit -- node ../bin/server.js`, then open Claude Code there.
+3. In `example`, run `claude mcp add website_audit -- node ../bin/server.js --library .`, then open Claude Code there.
 
 ## Folder structure
 
@@ -42,8 +42,11 @@ description: {What it does}
 arguments:
   {argumentName}: { description: "{What it is}", required: true }
 prompt: |
-  {Instructions, mustache with the arguments}
+  {Instructions}
 ```
+
+- Name the file after the command, `client_audit.yaml` runs as `/mcp__website_audit__client_audit`.
+- Use `{{argumentName}}` for an argument and `{{libraryFolder}}` for the full path from `--library`.
 
 ## Writing library files
 

@@ -6,8 +6,8 @@ import { parse as parseYaml } from "yaml"
 import * as zod from "zod"
 
 export const toolDescription = [
-  "Check every file of the rule library in the current folder against its rules",
-  "Step 1 read library yaml and every file in auth sources checks and reports",
+  "Check every file of the rule library against its rules",
+  "Step 1 read every file in auth sources checks and reports",
   "Step 2 check each file against the rules of its kind",
   "Step 3 give back one item per broken rule and one passed item per good file",
 ].join("\n")
@@ -36,7 +36,7 @@ export async function main(toolInput, serverConfig) {
 }
 
 async function readLibraryFiles(libraryFolder) {
-  const libraryFiles = [await readLibraryFile(libraryFolder, "library", "library.yaml")]
+  const libraryFiles = []
   for (const [subfolderName, fileExtension] of Object.entries(LIBRARY_SUBFOLDERS)) {
     const fileNames = await readdir(join(libraryFolder, subfolderName)).catch(() => [])
     for (const fileName of fileNames.filter(fileName => fileName.endsWith(fileExtension)).sort()) {
@@ -69,9 +69,7 @@ function groupSpecs(libraryFiles) {
 }
 
 function findProblems(libraryFile, specsByKind) {
-  if (libraryFile.text === null) return [buildProblem("No library.yaml", "A library.yaml with a title in the library folder")]
   if (libraryFile.parseError) return [buildProblem(libraryFile.parseError, "Valid YAML")]
-  if (libraryFile.kind === "library") return requireFields(libraryFile.spec, ["title"])
   if (libraryFile.kind === "checks") return checkCheckFile(libraryFile, specsByKind)
   if (libraryFile.kind === "sources") return checkSourceFile(libraryFile, specsByKind)
   if (libraryFile.kind === "auth") return checkLoginFile(libraryFile, specsByKind)
