@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import { access, readdir, readFile } from "node:fs/promises"
 import { basename, dirname, join, resolve } from "node:path"
 import { fileURLToPath, pathToFileURL } from "node:url"
@@ -10,27 +9,27 @@ import { parse as parseYaml } from "yaml"
 import * as zod from "zod"
 import packageInfo from "../package.json" with { type: "json" }
 
+export const commandUsage = "mcp --library <folder>"
+export const commandDescription = "Start the MCP server for a library folder like the example folder of website-audit"
 const PACKAGE_FOLDER = dirname(dirname(fileURLToPath(import.meta.url)))
 const TOOLS_FOLDER = join(PACKAGE_FOLDER, "tools")
 const PROMPTS_FOLDER = join(PACKAGE_FOLDER, "prompts")
-const { values: serverOptions } = parseArgs({ options: { library: { type: "string", default: "" } } })
-const LIBRARY_FOLDER = serverOptions.library && resolve(serverOptions.library)
-const serverConfig = { libraryFolder: LIBRARY_FOLDER, auditsFolder: join(LIBRARY_FOLDER, "audits") }
-const mcpServer = new McpServer({ name: packageInfo.name, version: packageInfo.version })
+const COMMAND_OPTIONS = { library: { type: "string", default: "" } }
 
-if (!LIBRARY_FOLDER) {
-  exitWithReason("No --library, pass the path of a library folder like the example folder of website-audit")
-}
-if (!(await pathExists(join(LIBRARY_FOLDER, "checks")))) {
-  exitWithReason(`No checks folder in ${LIBRARY_FOLDER}, pass --library the path of a library folder like the example folder of website-audit`)
-}
-await registerTools(mcpServer, serverConfig)
-await registerPrompts(mcpServer, serverConfig)
-await mcpServer.connect(new StdioServerTransport())
-
-function exitWithReason(failReason) {
-  process.stderr.write(`${failReason}\n`)
-  process.exit(1)
+export async function main(commandArgs) {
+  const { values: commandOptions } = parseArgs({ args: commandArgs, options: COMMAND_OPTIONS })
+  const libraryFolder = commandOptions.library && resolve(commandOptions.library)
+  if (!libraryFolder) {
+    throw new Error("No --library, pass the path of a library folder like the example folder of website-audit")
+  }
+  if (!(await pathExists(join(libraryFolder, "checks")))) {
+    throw new Error(`No checks folder in ${libraryFolder}, pass --library the path of a library folder like the example folder of website-audit`)
+  }
+  const serverConfig = { libraryFolder, auditsFolder: join(libraryFolder, "audits") }
+  const mcpServer = new McpServer({ name: packageInfo.name, version: packageInfo.version })
+  await registerTools(mcpServer, serverConfig)
+  await registerPrompts(mcpServer, serverConfig)
+  await mcpServer.connect(new StdioServerTransport())
 }
 
 function pathExists(filePath) {

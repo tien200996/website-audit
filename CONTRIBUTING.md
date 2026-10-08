@@ -4,12 +4,12 @@
 
 1. Clone this repo and run `npm i`.
 2. In `example`, run `npm i`.
-3. In `example`, run `claude mcp add website_audit -- node ../bin/server.js --library .`, then open Claude Code there.
+3. In `example`, run `claude mcp add website_audit -- node ../bin/cli.js mcp --library .`, then open Claude Code there.
 
 ## Folder structure
 
 ```
-bin/         the MCP server, loads tools and prompts
+bin/         cli.js runs a command or shows help, one file = one command
 tools/       one file = one tool
 prompts/     one file = one slash command
 example/     the starter library users copy
@@ -22,6 +22,12 @@ audit ⟲ [human answers or skips, AI answers prompts] ─▶ report ⟲ [human 
 ```
 
 Each audit lives in `audits/{auditId}/` of the library: `library.json` (a copy of the library), `inputs.json`, `sources/`, `work/`, `findings.json`, `review.json`, `report.html`.
+
+## Writing commands
+
+- Name the file after the command and add it to `cli.js`, `mcp.js` runs as `npx website-audit mcp`.
+- Export `commandUsage`, `commandDescription` and `main`, help lists them.
+- Throw an error to stop with its message.
 
 ## Writing tools
 

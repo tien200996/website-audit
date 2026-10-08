@@ -1,6 +1,6 @@
 {
   "name": "website-audit",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -8,7 +8,7 @@
     "url": "git+https://github.com/tien200996/website-audit.git"
   },
   "bin": {
-    "website-audit": "bin/server.js"
+    "website-audit": "bin/cli.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.1",

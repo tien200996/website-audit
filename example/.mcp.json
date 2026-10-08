@@ -2,7 +2,7 @@
   "mcpServers": {
     "website_audit": {
       "command": "npx",
-      "args": ["-y", "website-audit", "--library", "."]
+      "args": ["-y", "website-audit", "mcp", "--library", "."]
     }
   }
 }
