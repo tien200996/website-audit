@@ -32,6 +32,8 @@ prompt: |
     checks with all their fields plus id, referenceUrl, findings, openFindings, isChecked, hasOpenFindings, passedCount
   - each finding has decision (action, note) and records (id, record, text)
   - default.mustache is used unless the human asks for another
+  - long CSS, JS or shared parts go in reports/partials/<name>.mustache, included with a mustache partial tag of that name
+  - a partial always uses the default delimiters, even when included where they are changed
 
   ## Flow
   1. Ask what to build or fix

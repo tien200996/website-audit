@@ -22,7 +22,7 @@ export const outputSchema = {
     evidence: zod.array(zod.string()).describe("Always empty"),
   })).describe("One item per broken rule and one per good file"),
 }
-const LIBRARY_SUBFOLDERS = { auth: ".yaml", sources: ".yaml", checks: ".yaml", reports: ".mustache" }
+const LIBRARY_SUBFOLDERS = { auth: ".yaml", sources: ".yaml", checks: ".yaml", reports: ".mustache", "reports/partials": ".mustache" }
 const ID_PATTERN = /^[a-z][a-z0-9_]*$/
 const PLACEHOLDER_PATTERN = /\{([a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)?)\}/g
 const SYSTEM_PLACEHOLDERS = ["system.workdir", "system.date"]
@@ -32,7 +32,8 @@ const ACTION_VALUES = ["keep", "add", "fix", "delete", "migrate", "investigate"]
 export async function main(toolInput, serverConfig) {
   const libraryFiles = await readLibraryFiles(serverConfig.libraryFolder)
   const specsByKind = groupSpecs(libraryFiles)
-  return { items: buildItems(libraryFiles.map(libraryFile => ({ libraryFile, problemList: findProblems(libraryFile, specsByKind) }))) }
+  const partialIds = libraryFiles.filter(libraryFile => libraryFile.kind === "reports/partials").map(libraryFile => libraryFile.id)
+  return { items: buildItems(libraryFiles.map(libraryFile => ({ libraryFile, problemList: findProblems(libraryFile, specsByKind, partialIds) }))) }
 }
 
 async function readLibraryFiles(libraryFolder) {
@@ -68,12 +69,12 @@ function groupSpecs(libraryFiles) {
   return specsByKind
 }
 
-function findProblems(libraryFile, specsByKind) {
+function findProblems(libraryFile, specsByKind, partialIds) {
   if (libraryFile.parseError) return [buildProblem(libraryFile.parseError, "Valid YAML")]
   if (libraryFile.kind === "checks") return checkCheckFile(libraryFile, specsByKind)
   if (libraryFile.kind === "sources") return checkSourceFile(libraryFile, specsByKind)
   if (libraryFile.kind === "auth") return checkLoginFile(libraryFile, specsByKind)
-  return checkReportFile(libraryFile)
+  return checkReportFile(libraryFile, partialIds)
 }
 
 function buildProblem(actualText, expectedText) {
@@ -170,13 +171,21 @@ function checkLoginFile(libraryFile, specsByKind) {
   ]
 }
 
-function checkReportFile(libraryFile) {
+function checkReportFile(libraryFile, partialIds) {
   try {
-    Mustache.parse(libraryFile.text)
-    return []
+    const usedPartials = listPartialNames(Mustache.parse(libraryFile.text))
+    return [...new Set(usedPartials)].filter(partialName => !partialIds.includes(partialName))
+      .map(partialName => buildProblem(`Partial ${partialName} does not exist`, "Every partial is the id of a file in reports/partials"))
   } catch (templateError) {
     return [buildProblem(`Template does not parse: ${templateError.message}`, "A valid mustache template")]
   }
+}
+
+function listPartialNames(templateTokens) {
+  return templateTokens.flatMap(templateToken => {
+    if (templateToken[0] === ">") return [templateToken[1]]
+    return Array.isArray(templateToken[4]) ? listPartialNames(templateToken[4]) : []
+  })
 }
 
 function buildItems(fileResults) {

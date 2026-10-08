@@ -52,7 +52,8 @@ export async function main({ id: auditId, decisions: givenDecisions = {}, templa
 
   const reportPath = join(auditFolder, "report.html")
   const pageTemplate = findTemplate(auditData.savedLibrary, templateId)
-  await writeFile(reportPath, Mustache.render(pageTemplate, buildPageView(auditId, auditData, decisionItems)))
+  const pageView = buildPageView(auditId, auditData, decisionItems)
+  await writeFile(reportPath, Mustache.render(pageTemplate, pageView, partialName => findPartial(auditData.savedLibrary, partialName)))
   return { items: [], checks: [], report: reportPath }
 }
 
@@ -178,4 +179,10 @@ function buildRecordView(evidenceId, checkSources) {
     .flatMap(sourceOutput => Object.values(sourceOutput).flat())
     .find(sourceRecord => sourceRecord.id === evidenceId)
   return { id: evidenceId, record: evidenceRecord ?? {}, text: JSON.stringify(evidenceRecord ?? "Record not found", null, 2) }
+}
+
+function findPartial(savedLibrary, partialName) {
+  const savedPartials = savedLibrary.partials ?? {}
+  if (!savedPartials[partialName]) throw new Error(`No report partial ${partialName}, pick one of: ${Object.keys(savedPartials).join(", ") || "none in the library"}`)
+  return savedPartials[partialName].template
 }

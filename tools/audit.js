@@ -43,7 +43,7 @@ export const outputSchema = {
   })).describe("One item for everything checked"),
 }
 const AUDIT_ID_PATTERN = /^[a-z0-9][a-z0-9_-]*$/
-const LIBRARY_SUBFOLDERS = { auth: ".yaml", sources: ".yaml", checks: ".yaml", reports: ".mustache" }
+const LIBRARY_SUBFOLDERS = { auth: ".yaml", sources: ".yaml", checks: ".yaml", reports: ".mustache", "reports/partials": ".mustache" }
 const PLACEHOLDER_PATTERN = /\{([a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)?)\}/g
 const JS_TIMEOUT = 5000
 const REASON_LENGTH = 2000
@@ -88,9 +88,10 @@ async function saveLibrary(libraryFolder, auditFolder) {
   const savedLibrary = {}
   for (const [subfolderName, fileExtension] of Object.entries(LIBRARY_SUBFOLDERS)) {
     const subfolderPath = join(libraryFolder, subfolderName)
-    savedLibrary[subfolderName] = {}
+    const libraryKey = basename(subfolderName)
+    savedLibrary[libraryKey] = {}
     for (const libraryFile of await listFiles(subfolderPath, fileExtension)) {
-      savedLibrary[subfolderName][basename(libraryFile, fileExtension)] = { ...await readLibraryFile(join(subfolderPath, libraryFile)), folder: subfolderPath }
+      savedLibrary[libraryKey][basename(libraryFile, fileExtension)] = { ...await readLibraryFile(join(subfolderPath, libraryFile)), folder: subfolderPath }
     }
   }
   await writeJson(join(auditFolder, "library.json"), savedLibrary)
