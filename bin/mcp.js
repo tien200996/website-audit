@@ -9,12 +9,12 @@ import { parse as parseYaml } from "yaml"
 import * as zod from "zod"
 import packageInfo from "../package.json" with { type: "json" }
 
-export const commandUsage = "mcp --library <folder>"
-export const commandDescription = "Start the MCP server for a library folder like the example folder of website-audit"
+export const commandUsage = "mcp --library <folder> [--audits <folder>]"
+export const commandDescription = "Start the MCP server with the audit tools and prompts"
 const PACKAGE_FOLDER = dirname(dirname(fileURLToPath(import.meta.url)))
 const TOOLS_FOLDER = join(PACKAGE_FOLDER, "tools")
 const PROMPTS_FOLDER = join(PACKAGE_FOLDER, "prompts")
-const COMMAND_OPTIONS = { library: { type: "string", default: "" } }
+const COMMAND_OPTIONS = { library: { type: "string", default: "" }, audits: { type: "string", default: "" } }
 
 export async function main(commandArgs) {
   const { values: commandOptions } = parseArgs({ args: commandArgs, options: COMMAND_OPTIONS })
@@ -25,7 +25,8 @@ export async function main(commandArgs) {
   if (!(await pathExists(join(libraryFolder, "checks")))) {
     throw new Error(`No checks folder in ${libraryFolder}, pass --library the path of a library folder like the example folder of website-audit`)
   }
-  const serverConfig = { libraryFolder, auditsFolder: join(libraryFolder, "audits") }
+  const auditsFolder = resolve(commandOptions.audits || join(libraryFolder, "audits"))
+  const serverConfig = { libraryFolder, auditsFolder }
   const mcpServer = new McpServer({ name: packageInfo.name, version: packageInfo.version })
   await registerTools(mcpServer, serverConfig)
   await registerPrompts(mcpServer, serverConfig)

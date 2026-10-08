@@ -21,7 +21,7 @@ example/     the starter library users copy
 audit ⟲ [human answers or skips, AI answers prompts] ─▶ report ⟲ [human decides] ─▶ report.html
 ```
 
-Each audit lives in `audits/{auditId}/` of the library: `library.json` (a copy of the library), `inputs.json`, `sources/`, `work/`, `findings.json`, `review.json`, `report.html`.
+Each audit lives in `audits/{auditId}/` of the library, or in `{auditId}/` of the `--audits` folder when given. It holds `library.json` (a copy of the library), `inputs.json`, `sources/`, `work/`, `findings.json`, `review.json`, `report.html`.
 
 ## Writing commands
 
