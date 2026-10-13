@@ -4,7 +4,7 @@ Audit websites against your own rules.
 
 ## Getting started
 
-Copy the [example](example) folder and follow its README.
+Copy the [consent](examples/consent) folder and follow its README.
 
 ## Contributing
 

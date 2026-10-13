@@ -93,6 +93,7 @@ function checkCheckFile(libraryFile, specsByKind) {
     ...requireChoice(checkSpec, "priority", PRIORITY_VALUES),
     ...requireChoice(checkSpec, "action", ACTION_VALUES),
     ...requireSources(checkSpec.sources ?? [], specsByKind.sources),
+    ...requireNeeds(libraryFile.id, checkSpec.needs ?? [], specsByKind.checks),
     ...(checkSpec.js || checkSpec.prompt ? [] : [buildProblem("No js and no prompt", "js or prompt or both")]),
     ...compileJs(checkSpec.js),
   ]
@@ -116,6 +117,28 @@ function requireSources(sourceIds, sourceSpecs) {
   if (!Array.isArray(sourceIds)) return [buildProblem("sources is not a list", "sources is a list of source ids")]
   return sourceIds.filter(sourceId => !sourceSpecs[sourceId])
     .map(sourceId => buildProblem(`Source ${sourceId} does not exist`, "Every source is the id of a file in sources"))
+}
+
+function requireNeeds(checkId, neededIds, checkSpecs) {
+  if (!Array.isArray(neededIds)) return [buildProblem("needs is not a list", "needs is a list of check ids")]
+  return [
+    ...neededIds.filter(neededId => !checkSpecs[neededId])
+      .map(neededId => buildProblem(`Check ${neededId} does not exist`, "Every need is the id of a file in checks")),
+    ...(listNeededIds(neededIds, checkSpecs).includes(checkId) ? [buildProblem(`needs leads back to ${checkId}`, "needs never leads back to the same check")] : []),
+  ]
+}
+
+function listNeededIds(neededIds, checkSpecs) {
+  const foundIds = []
+  const pendingIds = [...neededIds]
+  while (pendingIds.length) {
+    const neededId = pendingIds.shift()
+    if (foundIds.includes(neededId)) continue
+    foundIds.push(neededId)
+    const nextIds = checkSpecs[neededId]?.needs
+    if (Array.isArray(nextIds)) pendingIds.push(...nextIds)
+  }
+  return foundIds
 }
 
 function compileJs(jsText) {

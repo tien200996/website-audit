@@ -1,0 +1,29 @@
+title: Site visit before consent
+description: Opens pages of a site in a new browser without touching the consent banner and records every network request
+inputs:
+  url:   { description: "Start url, e.g. https://client.com", required: true }
+  limit: { description: "Max pages to open, default 5" }
+outputs:
+  pages:
+    description: Every page opened
+    fields:
+      id:    { description: "Record id, e.g. page#1" }
+      path:  { description: "Path and query, e.g. /pricing" }
+      error: { description: "Why it failed to open, empty if ok" }
+  requests:
+    description: Every network request, one record per page
+    fields:
+      id:   { description: "Record id, e.g. req#57" }
+      page: { description: "Page record id, e.g. page#1" }
+      url:  { description: "Request url" }
+      body: { description: "POST body, empty if none" }
+  buttons:
+    description: Every visible button of the first page, links only inside a cookie or consent box
+    fields:
+      id:       { description: "Record id, e.g. button#3" }
+      text:     { description: "Button text, e.g. Accept all" }
+      selector: { description: "Selector that finds the button, e.g. #onetrust-accept-btn-handler" }
+      box:      { description: "Id or class of the cookie or consent box around it, empty if none" }
+run: node visit.js --url {url} --limit {limit}
+env:
+  WORKDIR: "{system.workdir}"

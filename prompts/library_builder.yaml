@@ -8,10 +8,12 @@ prompt: |
   - title says what was found, description says why it matters, quoted word for word from reference
   - reference is the official doc, e.g. a Google help page
   - action when found is yes: keep, add (missing), fix (wrong or rename), delete (old, duplicate or unused), migrate (newer method), investigate (unclear)
-  - js reads each source by id, e.g. crawl.pages, and gives back one item per checked thing:
+  - js reads each source by id, e.g. visit.pages, and gives back one item per checked thing:
     target, found (yes for a problem, no, unsure when data is missing), actual, expected, evidence (record ids)
   - a prompt is answered by the AI with the same items; its data is the js result, or the sources without js
   - js giving back an empty list means nothing to check, the prompt is not asked
+  - needs lists checks that must run first; js reads their findings by id like a source, e.g. consent_mode_default
+  - checks with needs run in a later phase, so the inputs of their sources are asked later
 
   ## Source
   - run is a shell command run in the source's folder
@@ -29,7 +31,7 @@ prompt: |
 
   ## Report template
   - data: audit (id, date), inputs, skips, summary (action, count), library, sources,
-    checks with all their fields plus id, referenceUrl, findings, openFindings, isChecked, hasOpenFindings, passedCount
+    checks with all their fields plus id, referenceUrl, findings, openFindings, isChecked, blockedBy, hasOpenFindings, passedCount
   - each finding has decision (action, note) and records (id, record, text)
   - default.mustache is used unless the human asks for another
   - long CSS, JS or shared parts go in reports/partials/<name>.mustache, included with a mustache partial tag of that name

@@ -1,0 +1,23 @@
+title: Site visit after accept all
+description: Opens the first page in a new browser, clicks the accept all button of the consent banner, then opens pages and records every network request after the click
+inputs:
+  url:             { description: "Start url, e.g. https://client.com", required: true }
+  accept_selector: { description: "Selector of the accept all button, e.g. #onetrust-accept-btn-handler", required: true }
+  limit:           { description: "Max pages to open, default 5" }
+outputs:
+  pages:
+    description: Every page opened
+    fields:
+      id:    { description: "Record id, e.g. page#1" }
+      path:  { description: "Path and query, e.g. /pricing" }
+      error: { description: "Why it failed to open, empty if ok" }
+  requests:
+    description: Every network request after the click, one record per page
+    fields:
+      id:   { description: "Record id, e.g. req#57" }
+      page: { description: "Page record id, e.g. page#1" }
+      url:  { description: "Request url" }
+      body: { description: "POST body, empty if none" }
+run: node visit.js --url {url} --limit {limit} --accept {accept_selector}
+env:
+  WORKDIR: "{system.workdir}"

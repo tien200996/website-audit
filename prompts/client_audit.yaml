@@ -11,7 +11,7 @@ prompt: |
   Call audit with the id and all inputs, skips and results so far. Always send everything, nothing is remembered.
   After the first call, show the checks as a short list: title and priority.
   For each item where found is yes:
-  - target is an input name: ask the human for it, use expected as the hint
+  - target is an input name: ask the human for it, use expected as the hint, suggest a value your findings already show
   - target is login: show actual, it holds the login link, wait until the human approved
   - target is run: show actual as the reason, ask the human to fix it or skip
   - target is prompt: do what actual says with its data yourself, put your findings in results under the id before "#"

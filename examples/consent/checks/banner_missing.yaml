@@ -1,0 +1,27 @@
+title: No consent banner with an accept all button
+description: "You must obtain end users’ legally valid consent to: the use of cookies or other local storage where legally required; and the collection, sharing, and use of personal data for personalization of ads."
+reference: https://www.google.com/about/company/user-consent-policy/
+priority: high
+action: add
+recommendation: Add a banner from a consent tool that asks before any tracking starts, with an accept all and a reject all button
+sources: [visit]
+js: |
+  const { buttons: buttonRecords, requests: requestRecords } = visit
+  const toolPattern = /cookielaw|onetrust|cookiebot|didomi|usercentrics|cookieyes|trustarc|quantcast|consentmanager|iubenda|termly|osano|complianz|cookie-script|sourcepoint/i
+  const acceptPattern = /accept|agree|allow|consent|got it|akzept|zustimm|accepter|aceptar|accetta|toestaan|đồng ý|chấp nhận/i
+  const toolHosts = requestRecords
+    .filter(requestRecord => toolPattern.test(requestRecord.url))
+    .map(requestRecord => /^https?:\/\/([^/?#]+)/.exec(requestRecord.url)?.[1] ?? "")
+  return {
+    consentTools: [...new Set(toolHosts)].filter(Boolean),
+    buttons: buttonRecords.filter(buttonRecord => buttonRecord.box || acceptPattern.test(buttonRecord.text))
+  }
+prompt: |
+  Find the button of the consent banner that accepts all cookies.
+  consentTools are hosts of known consent tools the first visit loaded, buttons may belong to a banner.
+  Give back one item:
+  - target: consent banner
+  - found: no when there is a banner with an accept all button, yes when there is none, unsure when you cannot tell
+  - actual: the selector and text of the accept all button, e.g. #onetrust-accept-btn-handler (Accept all), or what is missing
+  - expected: A consent banner with an accept all button
+  - evidence: [the button id], or [] when there is none

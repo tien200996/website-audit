@@ -1,0 +1,40 @@
+title: Trackers send data before consent
+description: "You must obtain end users’ legally valid consent to: the use of cookies or other local storage where legally required; and the collection, sharing, and use of personal data for personalization of ads."
+reference: https://www.google.com/about/company/user-consent-policy/
+priority: high
+action: fix
+recommendation: Hold these tags back until the visitor accepts, with the blocking of the consent tool or consent checks on the GTM triggers
+sources: [visit]
+js: |
+  const { pages: pageRecords, requests: requestRecords } = visit
+  const trackerRules = [
+    { name: "GA4", pattern: /(google-analytics|analytics\.google)\.com\/g\/collect/ },
+    { name: "Google Ads", pattern: /\/pagead\/(viewthrough|1p-)?conversion\// },
+    { name: "Meta Pixel", pattern: /facebook\.com\/tr[/?]/ },
+    { name: "TikTok Pixel", pattern: /analytics\.tiktok\.com\/api\/v2\/pixel/ },
+    { name: "LinkedIn Insight", pattern: /px\.ads\.linkedin\.com/ },
+    { name: "Microsoft Ads", pattern: /bat\.bing\.com\/action/ },
+    { name: "Microsoft Clarity", pattern: /\.clarity\.ms\/collect/ },
+    { name: "Hotjar", pattern: /\.hotjar\.(com|io)\// },
+    { name: "Pinterest Tag", pattern: /ct\.pinterest\.com/ },
+    { name: "X Pixel", pattern: /analytics\.twitter\.com|t\.co\/i\/adsct/ },
+    { name: "Snap Pixel", pattern: /tr\.snapchat\.com/ }
+  ]
+  return pageRecords.map(pageRecord => {
+    const trackerHits = requestRecords
+      .filter(requestRecord => requestRecord.page === pageRecord.id)
+      .map(requestRecord => ({ requestRecord, trackerRule: trackerRules.find(trackerRule => trackerRule.pattern.test(requestRecord.url)) }))
+      .filter(trackerHit => trackerHit.trackerRule)
+    const cookielessHits = trackerHits.filter(trackerHit => /[?&]gcs=G100/.test(trackerHit.requestRecord.url + "&" + trackerHit.requestRecord.body))
+    const trackingHits = trackerHits.filter(trackerHit => !cookielessHits.includes(trackerHit))
+    const trackerNames = [...new Set(trackingHits.map(trackerHit => trackerHit.trackerRule.name))]
+    return {
+      target: pageRecord.path,
+      found: trackingHits.length ? "yes" : cookielessHits.length || pageRecord.error ? "unsure" : "no",
+      actual: trackingHits.length ? `${trackerNames.join(", ")}: ${trackingHits.length} hits`
+        : cookielessHits.length ? `${cookielessHits.length} Google hits without cookies, consent denied`
+        : pageRecord.error || "No tracker hits",
+      expected: "No tracker hits before consent",
+      evidence: trackerHits.length ? trackerHits.map(trackerHit => trackerHit.requestRecord.id) : [pageRecord.id]
+    }
+  })

@@ -20,10 +20,10 @@ export async function main(commandArgs) {
   const { values: commandOptions } = parseArgs({ args: commandArgs, options: COMMAND_OPTIONS })
   const libraryFolder = commandOptions.library && resolve(commandOptions.library)
   if (!libraryFolder) {
-    throw new Error("No --library, pass the path of a library folder like the example folder of website-audit")
+    throw new Error("No --library, pass the path of a library folder like examples/consent of website-audit")
   }
   if (!(await pathExists(join(libraryFolder, "checks")))) {
-    throw new Error(`No checks folder in ${libraryFolder}, pass --library the path of a library folder like the example folder of website-audit`)
+    throw new Error(`No checks folder in ${libraryFolder}, pass --library the path of a library folder like examples/consent of website-audit`)
   }
   const auditsFolder = resolve(commandOptions.audits || join(libraryFolder, "audits"))
   const serverConfig = { libraryFolder, auditsFolder }

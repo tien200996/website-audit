@@ -3,8 +3,8 @@
 ## Run the app locally
 
 1. Clone this repo and run `npm i`.
-2. In `example`, run `npm i`.
-3. In `example`, run `claude mcp add website_audit -- node ../bin/cli.js mcp --library .`, then open Claude Code there.
+2. In `examples/consent`, run `npm i`.
+3. In `examples/consent`, run `claude mcp add website_audit -- node ../../bin/cli.js mcp --library .`, then open Claude Code there.
 
 ## Folder structure
 
@@ -12,7 +12,7 @@
 bin/         cli.js runs a command or shows help, one file = one command
 tools/       one file = one tool
 prompts/     one file = one slash command
-example/     the starter library users copy
+examples/    the starter libraries users copy
 ```
 
 ## How an audit works
@@ -21,7 +21,9 @@ example/     the starter library users copy
 audit ⟲ [human answers or skips, AI answers prompts] ─▶ report ⟲ [human decides] ─▶ report.html
 ```
 
-Each audit lives in `audits/{auditId}/` of the library, or in `{auditId}/` of the `--audits` folder when given. It holds `library.json` (a copy of the library), `inputs.json`, `sources/`, `work/`, `findings.json`, `review.json`, `report.html`.
+Checks run in phases, first those without needs, then those that need them, and each phase asks only its own inputs.
+
+Each audit lives in `audits/{auditId}/` of the library, or in `{auditId}/` of the `--audits` folder when given. It holds `library.json` (a copy of the library), `inputs.json`, `runs.json`, `sources/`, `work/`, `findings.json`, `review.json`, `report.html`.
 
 ## Writing commands
 
@@ -70,7 +72,8 @@ Field rules live in `tools/validate.js`, their meaning in `prompts/library_build
 
 - Tools load when the server starts, run `/mcp` to reconnect after a change.
 - Audit and report take everything on every call, nothing is merged.
-- Your local `claude mcp add` wins over the published package in `example/.mcp.json`.
+- A data source runs again only when its inputs change, or with a new audit id.
+- Your local `claude mcp add` wins over the published package in `examples/consent/.mcp.json`.
 
 ## Suggest a change
 

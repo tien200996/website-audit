@@ -1,0 +1,31 @@
+title: Google tags stay denied after accept all
+description: "After a user grants consent, persist their choice and call the update command accordingly on subsequent pages."
+reference: https://developers.google.com/tag-platform/security/guides/consent
+priority: high
+action: fix
+recommendation: Send a consent mode update with granted when the visitor accepts, e.g. with the GTM template of the consent tool, and keep it on every next page
+sources: [visit_accepted]
+needs: [consent_mode_default]
+js: |
+  const { requests: requestRecords } = visit_accepted
+  return consent_mode_default.map(defaultFinding => {
+    const tagHits = requestRecords.filter(requestRecord => readGoogleTag(requestRecord.url) === defaultFinding.target)
+    const consentHits = tagHits.filter(requestRecord => /[?&]gcs=G1/.test(requestRecord.url + "&" + requestRecord.body))
+    const grantedHit = consentHits.find(requestRecord => /[?&]gcs=G111/.test(requestRecord.url + "&" + requestRecord.body))
+    return {
+      target: defaultFinding.target,
+      found: grantedHit ? "no" : consentHits.length ? "yes" : "unsure",
+      actual: grantedHit ? "Sent gcs=G111 after accept all"
+        : consentHits.length ? `${consentHits.length} hits after accept all, none with gcs=G111`
+        : tagHits.length ? "No gcs after accept all, consent mode is not set"
+        : "No hits after accept all",
+      expected: "gcs=G111 after accept all",
+      evidence: [defaultFinding.id, ...(grantedHit ? [grantedHit.id] : tagHits.map(requestRecord => requestRecord.id))]
+    }
+  })
+
+  function readGoogleTag(requestUrl) {
+    const analyticsMatch = /\/g\/collect\?(?:.*&)?tid=(G-[A-Z0-9]+)/.exec(requestUrl)
+    const adsMatch = /\/pagead\/(?:viewthrough|1p-)?conversion\/(\d+)/.exec(requestUrl)
+    return analyticsMatch ? analyticsMatch[1] : adsMatch ? `AW-${adsMatch[1]}` : ""
+  }

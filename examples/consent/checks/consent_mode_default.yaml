@@ -1,0 +1,29 @@
+title: Google tags do not start with consent denied
+description: "To adjust the default measurement capabilities, call the gtag('consent', 'default', ...) command on every page of your site before any commands that send measurement data (such as config or event)."
+reference: https://developers.google.com/tag-platform/security/guides/consent
+priority: high
+action: fix
+recommendation: Set the consent mode default to denied before any Google tag fires, e.g. with the GTM template of the consent tool on the Consent Initialization trigger
+sources: [visit]
+js: |
+  const { requests: requestRecords } = visit
+  const googleHits = requestRecords
+    .map(requestRecord => ({ requestRecord, tagId: readGoogleTag(requestRecord.url) }))
+    .filter(googleHit => googleHit.tagId)
+  return [...new Set(googleHits.map(googleHit => googleHit.tagId))].map(tagId => {
+    const firstHit = googleHits.find(googleHit => googleHit.tagId === tagId).requestRecord
+    const consentState = /[?&]gcs=(G1[01][01])/.exec(firstHit.url + "&" + firstHit.body)?.[1] ?? ""
+    return {
+      target: tagId,
+      found: consentState === "G100" ? "no" : "yes",
+      actual: consentState ? `First hit before consent has gcs=${consentState}` : "First hit before consent has no gcs, consent mode is not set",
+      expected: "gcs=G100, ad and analytics storage denied",
+      evidence: [firstHit.id]
+    }
+  })
+
+  function readGoogleTag(requestUrl) {
+    const analyticsMatch = /\/g\/collect\?(?:.*&)?tid=(G-[A-Z0-9]+)/.exec(requestUrl)
+    const adsMatch = /\/pagead\/(?:viewthrough|1p-)?conversion\/(\d+)/.exec(requestUrl)
+    return analyticsMatch ? analyticsMatch[1] : adsMatch ? `AW-${adsMatch[1]}` : ""
+  }

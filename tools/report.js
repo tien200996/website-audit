@@ -71,6 +71,7 @@ async function readAuditData(auditFolder) {
     savedInputs: await readJson(join(auditFolder, "inputs.json")),
     findingItems: savedFindings.items,
     checkedIds: savedFindings.checked ?? [],
+    blockedNeeds: savedFindings.blocked ?? {},
     sourceOutputs: await readSourceOutputs(join(auditFolder, "sources")),
   }
 }
@@ -152,13 +153,16 @@ function countActions(findingItems, decisionsById) {
 }
 
 function buildCheckView(checkId, checkSpec, auditData, decisionsById) {
-  const checkSources = (checkSpec.sources ?? []).map(sourceId => auditData.sourceOutputs[sourceId] ?? {})
+  const inputRecords = [
+    ...(checkSpec.sources ?? []).flatMap(sourceId => Object.values(auditData.sourceOutputs[sourceId] ?? {}).flat()),
+    ...auditData.findingItems.filter(findingItem => (checkSpec.needs ?? []).includes(readCheckId(findingItem.id))),
+  ]
   const findingViews = auditData.findingItems
     .filter(findingItem => readCheckId(findingItem.id) === checkId)
     .map(findingItem => ({
       ...findingItem,
       decision: decisionsById[findingItem.id] ?? { id: findingItem.id, action: "", note: "" },
-      records: findingItem.evidence.map(evidenceId => buildRecordView(evidenceId, checkSources)),
+      records: findingItem.evidence.map(evidenceId => buildRecordView(evidenceId, inputRecords)),
     }))
   const openFindings = findingViews.filter(findingView => findingView.found !== "no")
   const referenceText = checkSpec.reference ?? ""
@@ -169,15 +173,14 @@ function buildCheckView(checkId, checkSpec, auditData, decisionsById) {
     findings: findingViews,
     openFindings,
     isChecked: auditData.checkedIds.includes(checkId),
+    blockedBy: (auditData.blockedNeeds[checkId] ?? []).join(", "),
     hasOpenFindings: openFindings.length > 0,
     passedCount: findingViews.length - openFindings.length,
   }
 }
 
-function buildRecordView(evidenceId, checkSources) {
-  const evidenceRecord = checkSources
-    .flatMap(sourceOutput => Object.values(sourceOutput).flat())
-    .find(sourceRecord => sourceRecord.id === evidenceId)
+function buildRecordView(evidenceId, inputRecords) {
+  const evidenceRecord = inputRecords.find(inputRecord => inputRecord.id === evidenceId)
   return { id: evidenceId, record: evidenceRecord ?? {}, text: JSON.stringify(evidenceRecord ?? "Record not found", null, 2) }
 }
 
